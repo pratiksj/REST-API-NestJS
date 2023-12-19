@@ -5,7 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true })); //whitelist true filter any unnecessary filed or properties from the client request
   const config = new DocumentBuilder()
     .setTitle('Median')
     .setDescription('The Median API description')
