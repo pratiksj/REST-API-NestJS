@@ -9,7 +9,8 @@ export class ArticlesService {
 
   //CRUD operations
   create(createArticleDto: CreateArticleDto) {
-    return 'This action adds a new article';
+    //return 'This action adds a new article';
+    return this.prisma.article.create({ data: createArticleDto });
   }
 
   findAll() {
@@ -18,11 +19,16 @@ export class ArticlesService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} article`;
+    //return `This action returns a #${id} article`;
+    return this.prisma.article.findUnique({ where: { id } });
   }
 
   update(id: number, updateArticleDto: UpdateArticleDto) {
-    return `This action updates a #${id} article`;
+    //return `This action updates a #${id} article`;
+    return this.prisma.article.update({
+      where: { id },
+      data: updateArticleDto,
+    });
   }
 
   remove(id: number) {
