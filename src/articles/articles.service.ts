@@ -13,7 +13,8 @@ export class ArticlesService {
   }
 
   findAll() {
-    return `This action returns all articles`;
+    //return `This action returns all articles`;
+    return this.prisma.article.findMany({ where: { published: true } });
   }
 
   findOne(id: number) {
@@ -26,5 +27,8 @@ export class ArticlesService {
 
   remove(id: number) {
     return `This action removes a #${id} article`;
+  }
+  findDrafts() {
+    return this.prisma.article.findMany({ where: { published: false } });
   }
 }
