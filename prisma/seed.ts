@@ -1,31 +1,39 @@
 // prisma/seed.ts
 
 import { PrismaClient } from '@prisma/client';
-
+import * as bcrpt from 'bcrypt';
 // initialize Prisma Client
 const prisma = new PrismaClient();
+const roundsOfHasing = 10;
 
 async function main() {
   //create two dummy users
+  const passwordSabin = await bcrpt.hash('password-sabin', roundsOfHasing);
+  const passwordAlex = await bcrpt.hash('password-alex', roundsOfHasing);
   const user1 = await prisma.user.upsert({
     where: { email: 'sabin@adams.com' },
-    update: {},
+    update: {
+      password: passwordSabin,
+    },
     create: {
       email: 'sabin@adams.com',
       name: 'Sabin Adams',
-      password: 'sabinadams',
+      password: passwordSabin,
     },
   });
 
   const user2 = await prisma.user.upsert({
     where: { email: 'alex@ruheni.com' },
-    update: {},
+    update: {
+      password: passwordAlex,
+    },
     create: {
       email: 'alex@ruheni.com',
       name: 'Alex Ruheni',
-      password: 'alexruheni',
+      password: passwordAlex,
     },
   });
+  console.log({ user1, user2 });
   // create two dummy articles
   const post1 = await prisma.article.upsert({
     where: { title: 'Prisma Adds Support for MongoDB' },
