@@ -34,19 +34,5 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # Login to Docker Hub on EC2
-            echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-
-            # Pull the latest Docker image
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/my-nestjs-app:latest
-
-            # Stop old container (ignore errors if not running)
-            docker stop my-nest-app || true
-            docker rm my-nest-app || true
-
-            # Run the new container
-            docker run -d \
-              --name my-nest-app \
-              -p 3333:3333 \
-              --env-file /etc/app.env \
-              ${{ secrets.DOCKERHUB_USERNAME }}/my-nestjs-app:latest
+            echo "Tesing ssh connection"
+            debug:true
