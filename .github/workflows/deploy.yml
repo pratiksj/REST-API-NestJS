@@ -1,4 +1,4 @@
-name: Deploy to EC2
+name: Docker Build & Deploy to EC2
 
 on:
   push:
@@ -6,23 +6,47 @@ on:
       - main
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/my-nestjs-app:latest .
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/my-nestjs-app:latest
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
+          username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ${{ secrets.APP_PATH }}
-            git pull origin main
-            npm install
-            npx prisma generate
-            npm run build
-            pm2 restart my-app || pm2 start dist/src/main.js --name my-app
+            # Login to Docker Hub on EC2
+            echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+            # Pull the latest Docker image
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/my-nestjs-app:latest
+
+            # Stop old container (ignore errors if not running)
+            docker stop my-nest-app || true
+            docker rm my-nest-app || true
+
+            # Run the new container
+            docker run -d \
+              --name my-nest-app \
+              -p 3333:3333 \
+              --env-file /etc/app.env \
+              ${{ secrets.DOCKERHUB_USERNAME }}/my-nestjs-app:latest
