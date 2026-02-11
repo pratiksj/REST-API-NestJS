@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout code
@@ -27,12 +27,21 @@ jobs:
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/my-nestjs-app:latest
 
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            echo "Tesing ssh connection"
-            debug:true
+      - name: Deploy Docker container
+        run: |
+          # Login to Docker Hub on EC2
+          echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+          # Pull the latest image
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/my-nestjs-app:latest
+
+          # Stop old container if running
+          docker stop my-nest-app || true
+          docker rm my-nest-app || true
+
+          # Run the new container
+          docker run -d \
+            --name my-nest-app \
+            -p 3333:3333 \
+            --env-file /etc/app.env \
+            ${{ secrets.DOCKERHUB_USERNAME }}/my-nestjs-app:latest
