@@ -72,4 +72,14 @@ export class UsersController {
     //return this.usersService.remove(id);
     return new UserEntity(await this.usersService.remove(id));
   }
+
+  @Get('email/:email')
+  @UseGuards(JwtAuthGurard)
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: UserEntity })
+  async findByEmail(@Param('email') email: string) {
+    // eslint-disable-next-line prettier/prettier
+
+    return 'This action returns a user with email';
+  }
 }
